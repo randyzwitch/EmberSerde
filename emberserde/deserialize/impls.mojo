@@ -1,3 +1,4 @@
+# Modified for dataframe_mojo: Mojo 1.3 nightly API compatibility.
 import emberserde.deserialize
 from std.builtin.rebind import downcast, rebind_var
 from std.collections import Set, Deque, LinkedList, Counter
@@ -422,12 +423,12 @@ __extension Tuple(Deserializable):
         mut d: Some[Deserializer],
     ) raises DeserializationError -> Self:
         var state = d.begin_tuple[Self.__len__()]()
+        comptime assert conforms_to(Self, Base)
         comptime assert Self.Ts.all_conforms_to[
             Defaultable
         ](), "Tuple deserialize requires Defaultable elements"
         var result = Self()
 
-        @__parameter
         def dispose[idx: Int](var elt: Self.Ts[idx]):
             _ = rebind_var[downcast[Self.Ts[idx], Base]](elt^)
 
@@ -443,7 +444,7 @@ __extension Tuple(Deserializable):
 
             state.end()
         except e:
-            result^.deinit_with[dispose]()
+            result^.deinit_with(dispose)
             _prepend_index(e, filled)
             raise e^
 

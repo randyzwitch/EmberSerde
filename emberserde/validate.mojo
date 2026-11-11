@@ -1,3 +1,4 @@
+# Modified for dataframe_mojo: Mojo 1.3 nightly API compatibility.
 from std.builtin.rebind import downcast
 
 from .field import TypedAnnotation
@@ -255,16 +256,15 @@ struct AnyOf[*Ts: FieldCheck](FieldCheck):
         var *checks: *Self.Ts,
         msg: StaticString = "Value not in options",
     ):
+        self.msg = msg
         __mlir_op.`lit.ownership.mark_initialized`(
             __get_mvalue_as_litref(self.checks)
         )
 
-        @__parameter
-        def put[idx: Int](var elt: Self.Ts[idx]):
+        def put[idx: Int](var elt: Self.Ts[idx]) {mut self}:
             Pointer(to=self.checks[idx]).unsafe_write(elt^)
 
-        checks^.consume_elements[put]()
-        self.msg = msg
+        checks^.consume_elements(put)
 
     def check[U: AnyType](self, value: U) -> Bool:
         comptime for k in range(Self.Ts.length):
@@ -286,16 +286,15 @@ struct OneOf[*Ts: FieldCheck](FieldCheck):
         var *checks: *Self.Ts,
         msg: StaticString = "Value must match exactly one option",
     ):
+        self.msg = msg
         __mlir_op.`lit.ownership.mark_initialized`(
             __get_mvalue_as_litref(self.checks)
         )
 
-        @__parameter
-        def put[idx: Int](var elt: Self.Ts[idx]):
+        def put[idx: Int](var elt: Self.Ts[idx]) {mut self}:
             Pointer(to=self.checks[idx]).unsafe_write(elt^)
 
-        checks^.consume_elements[put]()
-        self.msg = msg
+        checks^.consume_elements(put)
 
     def check[U: AnyType](self, value: U) -> Bool:
         var n = 0
@@ -318,16 +317,15 @@ struct NoneOf[*Ts: FieldCheck](FieldCheck):
         var *checks: *Self.Ts,
         msg: StaticString = "Value matched a rejected validator",
     ):
+        self.msg = msg
         __mlir_op.`lit.ownership.mark_initialized`(
             __get_mvalue_as_litref(self.checks)
         )
 
-        @__parameter
-        def put[idx: Int](var elt: Self.Ts[idx]):
+        def put[idx: Int](var elt: Self.Ts[idx]) {mut self}:
             Pointer(to=self.checks[idx]).unsafe_write(elt^)
 
-        checks^.consume_elements[put]()
-        self.msg = msg
+        checks^.consume_elements(put)
 
     def check[U: AnyType](self, value: U) -> Bool:
         comptime for k in range(Self.Ts.length):
